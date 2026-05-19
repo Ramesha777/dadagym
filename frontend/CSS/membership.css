@@ -1,0 +1,343 @@
+/* ═══════════════════════════════════════
+   Membership page — extends style.css palette
+   ═══════════════════════════════════════ */
+
+body { background: var(--bg-dark); }
+
+/* ─── HERO ─── */
+.ms-hero {
+    padding: calc(var(--nav-h) + 60px) 24px 40px;
+    text-align: center;
+    background:
+        radial-gradient(1100px 480px at 50% -10%, rgba(255,107,53,0.18), transparent 60%),
+        linear-gradient(180deg, #0e0e22 0%, var(--bg-dark) 100%);
+    border-bottom: 1px solid var(--border);
+}
+.ms-hero h1 {
+    font-size: clamp(28px, 4.5vw, 48px);
+    font-weight: 800;
+    color: var(--white);
+    max-width: 820px;
+    margin: 14px auto 16px;
+}
+.ms-hero p {
+    color: var(--text);
+    max-width: 640px;
+    margin: 0 auto 28px;
+    font-size: 16px;
+}
+.ms-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    background: rgba(255,107,53,0.12);
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* ─── BILLING TOGGLE ─── */
+.ms-billing {
+    display: inline-flex;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 6px;
+    border-radius: 50px;
+    gap: 4px;
+    box-shadow: var(--shadow);
+}
+.ms-billing-btn {
+    appearance: none;
+    border: none;
+    background: transparent;
+    color: var(--text);
+    padding: 10px 22px;
+    border-radius: 50px;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: 0.25s ease;
+}
+.ms-billing-btn:hover { color: var(--white); }
+.ms-billing-btn.active {
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(255,107,53,0.35);
+}
+.ms-save-badge {
+    background: rgba(34,197,94,0.18);
+    color: #4ade80;
+    padding: 3px 8px;
+    border-radius: 50px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+.ms-billing-btn.active .ms-save-badge {
+    background: rgba(255,255,255,0.22);
+    color: #fff;
+}
+
+/* ─── SECTIONS ─── */
+.ms-section {
+    padding: 70px 24px;
+}
+.ms-section-alt { background: var(--bg-section-alt); }
+.ms-section .container { width: 90%; max-width: 1180px; margin: 0 auto; }
+
+/* ─── PLAN CARDS ─── */
+.ms-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    align-items: stretch;
+}
+.ms-card {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 32px 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    box-shadow: var(--shadow);
+    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+.ms-card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(600px 200px at 50% -50%, var(--ms-glow, rgba(255,107,53,0.16)), transparent 70%);
+    pointer-events: none;
+    opacity: 0.7;
+}
+.ms-card:hover {
+    transform: translateY(-6px);
+    border-color: rgba(255,255,255,0.12);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+}
+.ms-card.featured {
+    border-color: var(--primary);
+    box-shadow: 0 24px 60px rgba(255,107,53,0.18), 0 0 0 1px rgba(255,107,53,0.45) inset;
+    transform: scale(1.02);
+}
+.ms-card.featured:hover { transform: translateY(-6px) scale(1.02); }
+
+.ms-card-badge {
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    background: rgba(255,255,255,0.06);
+    color: var(--text);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 5px 10px;
+    border-radius: 50px;
+    border: 1px solid var(--border);
+}
+.ms-card.featured .ms-card-badge {
+    background: var(--primary);
+    color: #fff;
+    border-color: var(--primary);
+}
+
+.ms-card-icon {
+    width: 56px;
+    height: 56px;
+    border-radius: 16px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255,255,255,0.06);
+    color: var(--ms-glow-strong, var(--primary));
+    font-size: 22px;
+}
+.ms-card h3 {
+    color: var(--white);
+    font-size: 26px;
+    font-weight: 700;
+    margin: 0;
+}
+.ms-card .ms-tagline {
+    color: var(--text-muted);
+    font-size: 13px;
+    margin: 0;
+}
+.ms-price {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+}
+.ms-price-amount {
+    font-size: 44px;
+    font-weight: 800;
+    color: var(--white);
+    line-height: 1;
+}
+.ms-price-period {
+    color: var(--text-muted);
+    font-size: 14px;
+}
+.ms-yearly-save {
+    font-size: 12px;
+    color: #4ade80;
+    font-weight: 600;
+    margin-top: -6px;
+}
+.ms-features {
+    list-style: none;
+    padding: 0;
+    margin: 6px 0 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.ms-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    color: var(--text);
+    font-size: 14px;
+}
+.ms-features i {
+    color: var(--primary);
+    margin-top: 4px;
+    font-size: 11px;
+}
+.ms-card .btn-full { margin-top: auto; }
+
+.ms-plan-id {
+    display: inline-block;
+    margin-top: 10px;
+    font-family: ui-monospace, "SF Mono", Menlo, monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    background: rgba(255,255,255,0.04);
+    padding: 4px 10px;
+    border-radius: 6px;
+    border: 1px solid var(--border);
+    letter-spacing: 0.4px;
+    align-self: flex-start;
+}
+
+.ms-note {
+    text-align: center;
+    color: var(--text-muted);
+    margin-top: 30px;
+    font-size: 13px;
+}
+.ms-note i { color: var(--primary); margin-right: 6px; }
+
+/* ─── COMPARE TABLE ─── */
+.ms-table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--card);
+}
+.ms-compare {
+    width: 100%;
+    border-collapse: collapse;
+    color: var(--text);
+    min-width: 640px;
+}
+.ms-compare thead th {
+    padding: 18px 16px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--white);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.03);
+}
+.ms-compare thead th.ms-feature-col { text-align: left; }
+.ms-compare thead th.ms-popular-col {
+    color: var(--primary);
+    position: relative;
+}
+.ms-compare tbody td {
+    padding: 14px 16px;
+    text-align: center;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+}
+.ms-compare tbody td:first-child {
+    text-align: left;
+    color: var(--text);
+    font-weight: 600;
+}
+.ms-compare tbody tr:last-child td { border-bottom: none; }
+.ms-compare .ok { color: #4ade80; }
+.ms-compare .no { color: rgba(255,255,255,0.2); }
+
+/* ─── FAQ ─── */
+.ms-faq {
+    max-width: 760px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+.ms-faq details {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 16px 20px;
+    transition: border-color 0.2s;
+}
+.ms-faq details[open] { border-color: rgba(255,107,53,0.45); }
+.ms-faq summary {
+    cursor: pointer;
+    font-weight: 600;
+    color: var(--white);
+    font-size: 15px;
+    list-style: none;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.ms-faq summary::-webkit-details-marker { display: none; }
+.ms-faq summary::after {
+    content: "+";
+    color: var(--primary);
+    font-size: 22px;
+    line-height: 1;
+    transition: transform 0.2s ease;
+}
+.ms-faq details[open] summary::after { transform: rotate(45deg); }
+.ms-faq p {
+    margin: 12px 0 0;
+    color: var(--text);
+    font-size: 14px;
+    line-height: 1.6;
+}
+.ms-faq a { color: var(--primary); }
+
+/* ─── RESPONSIVE ─── */
+@media (max-width: 992px) {
+    .ms-grid { grid-template-columns: 1fr; gap: 18px; }
+    .ms-card.featured { transform: none; }
+    .ms-card.featured:hover { transform: translateY(-6px); }
+}
+@media (max-width: 600px) {
+    .ms-hero { padding-top: calc(var(--nav-h) + 32px); }
+    .ms-billing-btn { padding: 9px 16px; font-size: 12px; }
+    .ms-save-badge { display: none; }
+    .ms-section { padding: 50px 18px; }
+}
