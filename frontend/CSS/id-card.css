@@ -1,0 +1,367 @@
+/**
+ * Dada Gym — digital ID card (modal + card chrome)
+ * Black / crimson gradient theme.
+ */
+
+.id-card-modal-wrap .modal-dialog {
+  max-width: 480px;
+}
+
+.id-card-modal-wrap .modal-content {
+  background: linear-gradient(155deg, #0c0c0c 0%, #1a0707 42%, #140808 100%);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: 18px;
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.55), 0 0 40px rgba(127, 29, 29, 0.15);
+  overflow: hidden;
+}
+
+.id-card-modal-wrap .modal-header {
+  border-bottom: 1px solid rgba(220, 38, 38, 0.22);
+}
+
+.id-card-modal-wrap .modal-footer {
+  border-top: 1px solid rgba(220, 38, 38, 0.18);
+}
+
+.id-card-modal-wrap .btn-close {
+  filter: invert(1);
+  opacity: 0.75;
+}
+
+.id-card-modal-body {
+  padding: 1.4rem 1.65rem 1.65rem;
+  display: flex;
+  justify-content: center;
+  background:
+    radial-gradient(ellipse 90% 65% at 50% 10%, rgba(185, 28, 28, 0.35), transparent 55%),
+    linear-gradient(180deg, #070707 0%, #0f0505 50%, #060606 100%);
+}
+
+/* Pass / card */
+.digital-id-card {
+  width: 100%;
+  max-width: 402px;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  min-height: 420px;
+  background:
+    linear-gradient(145deg, #000000 0%, #1f0a0a 38%, #450a0a 62%, #0a0a0a 100%);
+  box-shadow:
+    0 0 0 1px rgba(220, 38, 38, 0.35) inset,
+    0 14px 36px rgba(0, 0, 0, 0.65),
+    0 2px 12px rgba(127, 29, 29, 0.35);
+  overflow: hidden;
+  color: #f4f4f5;
+  font-family: "Poppins", system-ui, sans-serif;
+}
+
+.digital-id-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem 1rem 0.65rem;
+  background: linear-gradient(90deg, #0a0a0a 0%, #450a0a 50%, #0a0a0a 100%);
+  color: #fef2f2;
+  border-bottom: 3px solid #b91c1c;
+}
+
+.digital-id-card__header-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.digital-id-card__header-logo {
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  flex-shrink: 0;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+
+.digital-id-card__header-text {
+  letter-spacing: 0.08em;
+  font-weight: 700;
+  font-size: 1.14rem;
+  text-transform: uppercase;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+  line-height: 1.1;
+}
+
+.digital-id-card__body {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding: 1.22rem 1.35rem 1.35rem;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.35) 0%, rgba(40, 10, 10, 0.25) 100%);
+}
+
+.digital-id-card__lower {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 5.5rem;
+  padding: 0.35rem 0 0;
+}
+
+.digital-id-card__photo-wrap {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 0.75rem;
+}
+
+.digital-id-card__photo-slot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.digital-id-card__photo {
+  width: 128px;
+  height: 128px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(248, 250, 252, 0.95);
+  box-shadow:
+    0 0 0 1px rgba(185, 28, 28, 0.5),
+    0 8px 20px rgba(0, 0, 0, 0.5);
+  background: #27272a;
+}
+
+.digital-id-card__photo--placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #fca5a5;
+  background: linear-gradient(160deg, #18181b, #292524);
+  border-color: rgba(252, 165, 165, 0.35);
+}
+
+.digital-id-card__name {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: #fafafa;
+  line-height: 1.25;
+  margin-bottom: 0.65rem;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+.digital-id-card__banner {
+  text-align: center;
+  font-weight: 700;
+  font-size: 0.88rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #fff;
+  padding: 0.42rem 0.75rem;
+  border-radius: 6px;
+  margin-bottom: 0.85rem;
+}
+
+.id-card-banner--trainer {
+  background: linear-gradient(90deg, #7f1d1d, #dc2626, #991b1b);
+  box-shadow: 0 2px 10px rgba(220, 38, 38, 0.45);
+}
+
+.id-card-banner--member {
+  background: linear-gradient(90deg, #1d4ed8, #2563eb);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.45);
+}
+
+.id-card-banner--admin {
+  background: linear-gradient(90deg, #6d28d9, #8b5cf6);
+  box-shadow: 0 2px 8px rgba(139, 92, 246, 0.45);
+}
+
+.digital-id-card__spec {
+  text-align: center;
+  margin: -0.2rem auto 0.75rem;
+  max-width: 100%;
+  padding: 0 0.4rem;
+}
+
+.digital-id-card__spec-label {
+  display: block;
+  font-size: 0.62rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(253, 224, 224, 0.55);
+  margin-bottom: 0.2rem;
+}
+
+.digital-id-card__spec-value {
+  display: block;
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: #fecaca;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.digital-id-card__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.35rem 0.65rem;
+  width: 100%;
+  padding: 0.32rem 0.05rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.digital-id-card__row-label {
+  flex: 0 0 auto;
+  font-size: 0.62rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(253, 224, 224, 0.55);
+}
+
+.digital-id-card__row-value {
+  flex: 1 1 140px;
+  text-align: right;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fef2f2;
+  line-height: 1.35;
+  word-break: break-word;
+}
+
+.digital-id-card__joined {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: center;
+  font-size: 0.86rem;
+  color: rgba(253, 224, 224, 0.75);
+  margin-top: 0.15rem;
+  margin-bottom: 0.5rem;
+}
+
+.digital-id-card__joined i {
+  opacity: 0.85;
+  color: #f87171;
+}
+
+.digital-id-card__joined strong {
+  color: #fef2f2;
+  font-weight: 600;
+}
+
+/* QR: centered in lower region */
+.digital-id-card__qr-stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.digital-id-card__qr-chip {
+  margin-left: auto;
+  margin-right: auto;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2px;
+  line-height: 0;
+  background: linear-gradient(180deg, #fef2f2 0%, #e7e5e4 100%);
+  border-radius: 6px;
+  border: 1px solid rgba(185, 28, 28, 0.3);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35);
+}
+
+.digital-id-card__qr-host {
+  display: block;
+  line-height: 0;
+  min-height: 0;
+  min-width: 0;
+}
+
+.digital-id-card__qr-host canvas,
+.digital-id-card__qr-host img {
+  border-radius: 4px;
+  display: block;
+  max-width: 100%;
+}
+
+.digital-id-card__qr-fallback {
+  margin: 0;
+  padding: 0.35rem;
+  font-size: 0.78rem;
+  color: #7f1d1d !important;
+}
+
+.digital-id-card__footer {
+  flex-shrink: 0;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid rgba(248, 113, 113, 0.35);
+  text-align: center;
+  font-size: 0.72rem;
+  line-height: 1.45;
+  color: rgba(253, 224, 224, 0.88);
+}
+
+.digital-id-card__footer-loc {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-bottom: 0.35rem;
+  padding: 0 0.25rem;
+  text-wrap: balance;
+}
+
+.digital-id-card__footer-loc i {
+  flex-shrink: 0;
+  margin-top: 0.12rem;
+  color: #f87171;
+}
+
+.digital-id-card__footer-web {
+  display: inline-block;
+  max-width: 100%;
+  color: #fde68a;
+  font-weight: 600;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.digital-id-card__footer-web:hover {
+  color: #fef08a;
+  text-decoration: underline;
+}
+
+.id-card-modal-loading {
+  min-height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(254, 226, 226, 0.8);
+  font-size: 0.95rem;
+}
+
+@media (max-width: 480px) {
+  .id-card-modal-wrap .modal-dialog {
+    margin: 0.75rem;
+  }
+
+  .digital-id-card__photo {
+    width: 108px;
+    height: 108px;
+  }
+
+  .digital-id-card {
+    min-height: 340px;
+  }
+}
