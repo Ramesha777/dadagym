@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Membership Plans | DaDaGym</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="stylesheet" href="CSS/style.css">
+<link rel="stylesheet" href="CSS/membership.css">
+<link rel="icon" type="image/png" href="images/logo.png">
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav id="navbar" class="scrolled">
+    <a href="index.html" class="nav-logo"><img src="images/logo.png" alt="DaDaGym"></a>
+    <div class="nav-links" id="navLinks">
+        <ul>
+            <li><a href="index.html">HOME</a></li>
+            <li><a href="membership.html" class="active">PLANS</a></li>
+            <li><a href="index.html#classes">CLASSES</a></li>
+            <li><a href="index.html#trainers">TRAINERS</a></li>
+            <li><a href="index.html#contact">CONTACT</a></li>
+            <li><a href="login.html" class="nav-login"><i class="fas fa-user"></i> LOGIN</a></li>
+        </ul>
+    </div>
+    <div class="menu-toggle" id="menuToggle">
+        <span></span><span></span><span></span>
+    </div>
+</nav>
+
+<!-- ─── PAGE HEADER ─── -->
+<header class="ms-hero">
+    <div class="container">
+        <span class="ms-eyebrow"><i class="fas fa-dumbbell"></i> Membership</span>
+        <h1>Choose the plan that <span class="accent">moves you forward</span></h1>
+        <p>Flexible, no-contract memberships with everything you need to train smarter. Pay monthly or save with yearly billing.</p>
+
+        <!-- Billing period toggle -->
+        <div class="ms-billing" role="tablist" aria-label="Billing period">
+            <button class="ms-billing-btn active" data-period="monthly" role="tab" aria-selected="true">Monthly</button>
+            <button class="ms-billing-btn" data-period="yearly" role="tab" aria-selected="false">
+                Yearly <span class="ms-save-badge">Save 2 months</span>
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- ─── PLANS GRID ─── -->
+<section class="ms-section">
+    <div class="container">
+        <div class="ms-grid" id="plansGrid">
+            <!-- Cards rendered by membership.js -->
+        </div>
+
+        <p class="ms-note">
+            <i class="fas fa-shield-halved"></i>
+            Cancel any time. Prices in GBP (£). Tax calculated at checkout.
+        </p>
+    </div>
+</section>
+
+<!-- ─── COMPARE TABLE ─── -->
+<section class="ms-section ms-section-alt">
+    <div class="container">
+        <div class="section-header">
+            <h2>Compare Plans</h2>
+            <p>Everything you get, side-by-side.</p>
+        </div>
+
+        <div class="ms-table-wrap">
+            <table class="ms-compare">
+                <thead>
+                    <tr>
+                        <th class="ms-feature-col">Features</th>
+                        <th>Basic</th>
+                        <th class="ms-popular-col">Premium</th>
+                        <th>VIP</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr><td>24/7 gym access</td><td><i class="fas fa-check ok"></i></td><td><i class="fas fa-check ok"></i></td><td><i class="fas fa-check ok"></i></td></tr>
+                    <tr><td>Cardio &amp; weights</td><td><i class="fas fa-check ok"></i></td><td><i class="fas fa-check ok"></i></td><td><i class="fas fa-check ok"></i></td></tr>
+                    <tr><td>Member mobile app</td><td><i class="fas fa-check ok"></i></td><td><i class="fas fa-check ok"></i></td><td><i class="fas fa-check ok"></i></td></tr>
+                    <tr><td>Group classes</td><td><i class="fas fa-xmark no"></i></td><td><i class="fas fa-check ok"></i></td><td><i class="fas fa-check ok"></i></td></tr>
+                    <tr><td>Sauna &amp; steam room</td><td><i class="fas fa-xmark no"></i></td><td><i class="fas fa-check ok"></i></td><td><i class="fas fa-check ok"></i></td></tr>
+                    <tr><td>Guest passes</td><td>—</td><td>2 / month</td><td>Unlimited</td></tr>
+                    <tr><td>Personal trainer</td><td><i class="fas fa-xmark no"></i></td><td>Add-on</td><td>4 sessions / mo</td></tr>
+                    <tr><td>Custom nutrition plan</td><td><i class="fas fa-xmark no"></i></td><td>1 consultation</td><td><i class="fas fa-check ok"></i></td></tr>
+                    <tr><td>Priority class booking</td><td><i class="fas fa-xmark no"></i></td><td><i class="fas fa-xmark no"></i></td><td><i class="fas fa-check ok"></i></td></tr>
+                    <tr><td>Spa &amp; recovery</td><td><i class="fas fa-xmark no"></i></td><td><i class="fas fa-xmark no"></i></td><td><i class="fas fa-check ok"></i></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>
+
+<!-- ─── FAQ ─── -->
+<section class="ms-section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Frequently Asked Questions</h2>
+        </div>
+        <div class="ms-faq">
+            <details>
+                <summary>Can I cancel my membership at any time?</summary>
+                <p>Yes. All DaDaGym plans are no-contract. You can cancel from your member dashboard and keep access until the end of your billing period.</p>
+            </details>
+            <details>
+                <summary>Is the payment on this site real?</summary>
+                <p>Not yet — checkout is currently a <strong>simulation</strong> for demo purposes. It will be replaced with a real provider (Stripe) in a future release.</p>
+            </details>
+            <details>
+                <summary>Do you offer family or student discounts?</summary>
+                <p>Reach out via the <a href="index.html#contact">contact form</a> and our team will be happy to help with custom or group pricing.</p>
+            </details>
+            <details>
+                <summary>Can I switch plans later?</summary>
+                <p>Absolutely. Upgrade or downgrade any time from your dashboard — the change applies on your next billing cycle.</p>
+            </details>
+        </div>
+    </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+    <div class="container footer-inner">
+        <div class="footer-brand">
+            <img src="images/logo.png" alt="DaDaGym" width="50">
+            <span>DaDaGym Fitness</span>
+        </div>
+        <div class="footer-links">
+            <a href="index.html">Home</a>
+            <a href="membership.html">Plans</a>
+            <a href="index.html#classes">Classes</a>
+            <a href="index.html#trainers">Trainers</a>
+            <a href="index.html#contact">Contact</a>
+            <a href="terms.html">Terms</a>
+        </div>
+        <p>&copy; 2026 DaDaGym Fitness Center. All rights reserved.</p>
+    </div>
+</footer>
+
+<script type="module" src="js/membership.js"></script>
+</body>
+</html>
