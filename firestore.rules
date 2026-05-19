@@ -1,0 +1,824 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && (
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid))
+        || (
+          exists(/databases/$(database)/documents/users/$(request.auth.uid))
+          && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin'
+        )
+      );
+    }
+
+    function isApprovedTrainer() {
+      return isSignedIn()
+        && exists(/databases/$(database)/documents/trainers/$(request.auth.uid))
+        && get(/databases/$(database)/documents/trainers/$(request.auth.uid)).data.approvalStatus == 'approved';
+    }
+
+    // Gym kiosk punch — deterministic doc id day_{firebaseUid}_{dateKey}; anon create/update/checkout; listing admin-only.
+    function gymPunchOpenPayloadOk() {
+      let d = request.resource.data;
+      return d.keys().hasOnly([
+          'subjectUid',
+          'role',
+          'gymPublicId',
+          'displayName',
+          'email',
+          'dateKey',
+          'status',
+          'checkInAt',
+          'kioskSource'
+        ])
+        && d.subjectUid is string
+        && d.subjectUid.size() >= 10
+        && d.subjectUid.size() <= 128
+        && d.role in ['member', 'trainer']
+        && d.gymPublicId is string
+        && d.gymPublicId.size() <= 16
+        && d.displayName is string
+        && d.displayName.size() >= 1
+        && d.displayName.size() <= 200
+        && d.email is string
+        && d.email.size() < 320
+        && d.dateKey is string
+        && d.dateKey.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.status == 'open'
+        && d.checkInAt == request.time
+        && d.kioskSource == 'public';
+    }
+
+    function gymPunchOpenCreatePublic(sessionId) {
+      let d = request.resource.data;
+      return gymPunchOpenPayloadOk()
+        && sessionId == ('day_' + d.subjectUid + '_' + d.dateKey)
+        && sessionId.matches('^day_[A-Za-z0-9_-]{10,140}_[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    // Multi visit / day: check-in ↔ check-out alternates; new day (doc id) resets automatically at midnight local date.
+    function gymPunchVisitIdentityOkData(d) {
+      return d.subjectUid is string
+        && d.subjectUid.size() >= 10
+        && d.subjectUid.size() <= 128
+        && d.role in ['member', 'trainer']
+        && d.gymPublicId is string
+        && d.gymPublicId.size() <= 16
+        && d.displayName is string
+        && d.displayName.size() >= 1
+        && d.displayName.size() <= 200
+        && d.email is string
+        && d.email.size() < 320
+        && d.dateKey is string
+        && d.dateKey.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.kioskSource == 'public';
+    }
+
+    function gymPunchVisitIdentityMatch(r, d) {
+      return d.subjectUid == r.subjectUid
+        && d.role == r.role
+        && d.gymPublicId == r.gymPublicId
+        && d.displayName == r.displayName
+        && d.email == r.email
+        && d.dateKey == r.dateKey
+        && d.kioskSource == r.kioskSource;
+    }
+
+    // checkOutAt must be a real timestamp inside completedVisits[] — FieldValue.serverTimestamp() is invalid there,
+    // so the client sends Timestamp.now(). Allow reasonable skew vs request.time and require ordering after check-in.
+    function gymPunchClientCheckoutTimestampOk(checkOutTs, checkInTs) {
+      return checkOutTs is timestamp
+        && checkInTs is timestamp
+        && checkOutTs >= checkInTs
+        && checkOutTs <= request.time + duration.value(15, 'm')
+        && checkOutTs >= request.time - duration.value(24, 'h');
+    }
+
+    function gymPunchVisitOpenCreatePublic(sessionId) {
+      let d = request.resource.data;
+      return d.keys().hasOnly([
+          'subjectUid',
+          'role',
+          'gymPublicId',
+          'displayName',
+          'email',
+          'dateKey',
+          'kioskSource',
+          'currentCheckIn',
+          'completedVisits'
+        ])
+        && gymPunchVisitIdentityOkData(d)
+        && d.currentCheckIn == request.time
+        && d.completedVisits is list
+        && d.completedVisits.size() == 0
+        && sessionId == ('day_' + d.subjectUid + '_' + d.dateKey)
+        && sessionId.matches('^day_[A-Za-z0-9_-]{10,140}_[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+    }
+
+    function gymPunchVisitCheckoutOk() {
+      let r = resource.data;
+      let d = request.resource.data;
+      let nx = d.completedVisits.size() - 1;
+      let last = d.completedVisits[nx];
+      return gymPunchVisitIdentityMatch(r, d)
+        && r.keys().hasAny(['currentCheckIn'])
+        && r.currentCheckIn is timestamp
+        && r.completedVisits is list
+        && d.completedVisits is list
+        && d.completedVisits.size() == r.completedVisits.size() + 1
+        && d.currentCheckIn == null
+        && last.keys().hasOnly(['checkInAt', 'checkOutAt', 'minutesOnSite'])
+        && last.checkInAt == r.currentCheckIn
+        && gymPunchClientCheckoutTimestampOk(last.checkOutAt, r.currentCheckIn)
+        && last.minutesOnSite is number
+        && last.minutesOnSite >= 0
+        && last.minutesOnSite <= 2000
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'currentCheckIn',
+          'completedVisits'
+        ]);
+    }
+
+    function gymPunchVisitCheckInOk() {
+      let r = resource.data;
+      let d = request.resource.data;
+      return gymPunchVisitIdentityMatch(r, d)
+        && r.keys().hasAny(['currentCheckIn'])
+        && r.currentCheckIn == null
+        && r.completedVisits is list
+        && d.completedVisits is list
+        && d.completedVisits == r.completedVisits
+        && d.currentCheckIn == request.time
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['currentCheckIn']);
+    }
+
+    function gymPunchLegacyOpenToVisitCheckoutOk() {
+      let r = resource.data;
+      let d = request.resource.data;
+      let v0 = d.completedVisits[0];
+      return gymPunchVisitIdentityOkData(r)
+        && r.status == 'open'
+        && !r.keys().hasAny(['currentCheckIn'])
+        && r.checkInAt is timestamp
+        && d.subjectUid == r.subjectUid
+        && d.role == r.role
+        && d.gymPublicId == r.gymPublicId
+        && d.displayName == r.displayName
+        && d.email == r.email
+        && d.dateKey == r.dateKey
+        && d.kioskSource == r.kioskSource
+        && d.completedVisits is list
+        && d.completedVisits.size() == 1
+        && v0.keys().hasOnly(['checkInAt', 'checkOutAt', 'minutesOnSite'])
+        && v0.checkInAt == r.checkInAt
+        && gymPunchClientCheckoutTimestampOk(v0.checkOutAt, r.checkInAt)
+        && v0.minutesOnSite is number
+        && v0.minutesOnSite >= 0
+        && v0.minutesOnSite <= 2000
+        && d.currentCheckIn == null
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'completedVisits',
+          'currentCheckIn',
+          'status',
+          'checkInAt'
+        ]);
+    }
+
+    function gymPunchLegacyCompletedToVisitCheckInOk() {
+      let r = resource.data;
+      let d = request.resource.data;
+      let v0 = d.completedVisits[0];
+      return gymPunchVisitIdentityOkData(r)
+        && r.status == 'completed'
+        && !r.keys().hasAny(['currentCheckIn'])
+        && r.checkInAt is timestamp
+        && r.checkOutAt is timestamp
+        && r.minutesOnSite is number
+        && d.subjectUid == r.subjectUid
+        && d.role == r.role
+        && d.gymPublicId == r.gymPublicId
+        && d.displayName == r.displayName
+        && d.email == r.email
+        && d.dateKey == r.dateKey
+        && d.kioskSource == r.kioskSource
+        && d.completedVisits is list
+        && d.completedVisits.size() == 1
+        && v0.keys().hasOnly(['checkInAt', 'checkOutAt', 'minutesOnSite'])
+        && v0.checkInAt == r.checkInAt
+        && v0.checkOutAt == r.checkOutAt
+        && v0.minutesOnSite == r.minutesOnSite
+        && d.currentCheckIn == request.time
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'completedVisits',
+          'currentCheckIn',
+          'status',
+          'checkInAt',
+          'checkOutAt',
+          'minutesOnSite'
+        ]);
+    }
+
+    function gymPunchCheckoutOk() {
+      let r = resource.data;
+      let d = request.resource.data;
+      return r.status == 'open'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status',
+          'checkOutAt',
+          'minutesOnSite'
+        ])
+        && d.status == 'completed'
+        && d.checkOutAt == request.time
+        && d.minutesOnSite is number
+        && d.minutesOnSite >= 0
+        && d.minutesOnSite <= 2000;
+    }
+
+    function contactWebsiteMessageCreateOk() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['name', 'email', 'phone', 'message', 'createdAt'])
+        && d.name is string
+        && d.name.size() >= 1
+        && d.name.size() <= 200
+        && d.email is string
+        && d.email.size() >= 5
+        && d.email.size() <= 254
+        && d.phone is string
+        && d.phone.size() <= 60
+        && d.message is string
+        && d.message.size() >= 1
+        && d.message.size() <= 5000
+        && d.createdAt == request.time;
+    }
+
+    // Assigned trainer marks session started (check-in). Immutable booking fields must stay the same.
+    function bookingTrainerSessionStartOk() {
+      return isApprovedTrainer()
+        && resource.data.trainerId == request.auth.uid
+        && resource.data.status == 'confirmed'
+        && request.resource.data.status == 'confirmed'
+        && resource.data.get('sessionStarted', false) != true
+        && request.resource.data.sessionStarted == true
+        && request.resource.data.sessionStartedBy == request.auth.uid
+        && request.resource.data.memberId == resource.data.memberId
+        && request.resource.data.trainerId == resource.data.trainerId
+        && request.resource.data.classId == resource.data.classId
+        && request.resource.data.bookingCode == resource.data.bookingCode
+        && request.resource.data.slotKey == resource.data.slotKey
+        && request.resource.data.memberName == resource.data.memberName
+        && request.resource.data.memberEmail == resource.data.memberEmail
+        && request.resource.data.className == resource.data.className
+        && request.resource.data.trainerName == resource.data.trainerName
+        && request.resource.data.date == resource.data.date
+        && request.resource.data.time == resource.data.time
+        && request.resource.data.scheduleDay == resource.data.scheduleDay;
+    }
+
+    // Member may cancel only before trainer starts session.
+    function bookingMemberCancelOk() {
+      return resource.data.memberId == request.auth.uid
+        && resource.data.status == 'confirmed'
+        && request.resource.data.status == 'cancelled'
+        && resource.data.get('sessionStarted', false) != true
+        && request.resource.data.memberId == resource.data.memberId
+        && request.resource.data.trainerId == resource.data.trainerId
+        && request.resource.data.classId == resource.data.classId
+        && request.resource.data.bookingCode == resource.data.bookingCode
+        && request.resource.data.slotKey == resource.data.slotKey
+        && request.resource.data.memberName == resource.data.memberName
+        && request.resource.data.memberEmail == resource.data.memberEmail
+        && request.resource.data.className == resource.data.className
+        && request.resource.data.trainerName == resource.data.trainerName
+        && request.resource.data.date == resource.data.date
+        && request.resource.data.time == resource.data.time
+        && request.resource.data.scheduleDay == resource.data.scheduleDay;
+    }
+
+    function trainerSessionRequestPath(rid) {
+      return /databases/$(database)/documents/trainerSessionRequests/$(rid);
+    }
+
+    // Trainer accepts 1:1 session: same batch updates request to accepted and creates booking + lookup.
+    function bookingPersonalSessionTrainerCreateOk(bookingId) {
+      let d = request.resource.data;
+      let sid = d.get('personalSessionRequestId', '');
+      return isApprovedTrainer()
+        && d.trainerId == request.auth.uid
+        && d.status == 'confirmed'
+        && d.get('personalSession', false) == true
+        && d.classId == '__personal_1to1__'
+        && d.className is string
+        && d.className.size() >= 1
+        && d.className.size() <= 200
+        && d.memberId is string
+        && d.memberId.size() >= 10
+        && d.memberId.size() <= 128
+        && d.slotKey == bookingId
+        && d.bookingCode is int
+        && d.bookingCode >= 10000
+        && d.bookingCode <= 99999
+        && d.date is string
+        && d.date.size() >= 8
+        && d.date.size() <= 32
+        && d.time is string
+        && d.time.size() >= 1
+        && d.time.size() <= 48
+        && (!d.keys().hasAny(['scheduleDay']) || d.scheduleDay is string)
+        && sid is string
+        && sid.size() >= 10
+        && sid.size() <= 128
+        && exists(trainerSessionRequestPath(sid))
+        && get(trainerSessionRequestPath(sid)).data.trainerId == request.auth.uid
+        && get(trainerSessionRequestPath(sid)).data.memberId == d.memberId
+        && get(trainerSessionRequestPath(sid)).data.status == 'accepted'
+        && get(trainerSessionRequestPath(sid)).data.preferredDate == d.date
+        && get(trainerSessionRequestPath(sid)).data.preferredTime == d.time;
+    }
+
+    function bookingLookupPersonalTrainerCreateOk(lookupCode) {
+      let d = request.resource.data;
+      let bid = d.bookingId;
+      return isApprovedTrainer()
+        && lookupCode.matches('^[0-9]{5}$')
+        && int(lookupCode) >= 10000
+        && int(lookupCode) <= 99999
+        && bid is string
+        && bid.size() > 0
+        && exists(/databases/$(database)/documents/bookings/$(bid))
+        && get(/databases/$(database)/documents/bookings/$(bid)).data.trainerId == request.auth.uid
+        && get(/databases/$(database)/documents/bookings/$(bid)).data.get('personalSession', false) == true
+        && get(/databases/$(database)/documents/bookings/$(bid)).data.memberId == d.memberId
+        && lookupCode == string(get(/databases/$(database)/documents/bookings/$(bid)).data.bookingCode);
+    }
+
+    function classEnrolledPrev(data) {
+      return data.keys().hasAny(['enrolled']) ? data.enrolled : 0;
+    }
+
+    // Signed-in users may only change enrolled by ±1; all other editable fields must stay the same.
+    // (diff().changedKeys().hasOnly(['enrolled']) is unreliable with increment() + nested maps like schedule.)
+    function classEnrollmentSelfAdjustOk() {
+      return isSignedIn()
+        && request.resource.data.name == resource.data.name
+        && request.resource.data.type == resource.data.type
+        && request.resource.data.get('description', '') == resource.data.get('description', '')
+        && request.resource.data.schedule == resource.data.schedule
+        && request.resource.data.trainerId == resource.data.trainerId
+        && request.resource.data.get('trainerName', '') == resource.data.get('trainerName', '')
+        && request.resource.data.capacity == resource.data.capacity
+        && request.resource.data.get('status', 'active') == resource.data.get('status', 'active')
+        && (
+          request.resource.data.enrolled == classEnrolledPrev(resource.data) + 1
+          || (
+            request.resource.data.enrolled == classEnrolledPrev(resource.data) - 1
+            && request.resource.data.enrolled >= 0
+          )
+        );
+    }
+
+    function classSessionEnrolledPrev(data) {
+      return data.keys().hasAny(['enrolled']) ? data.enrolled : 0;
+    }
+
+    // Per class + calendar date (recurring weekly sessions). Doc id: {classId}_{YYYY-MM-DD}.
+    function classSessionEnrolledCreateOk(sessionId) {
+      let d = request.resource.data;
+      return isSignedIn()
+        && d.keys().hasOnly(['classId', 'date', 'enrolled'])
+        && d.classId is string
+        && d.classId.size() > 0
+        && d.classId.size() <= 128
+        && d.date is string
+        && d.date.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
+        && d.enrolled is int
+        && d.enrolled == 1
+        && sessionId == d.classId + '_' + d.date;
+    }
+
+    function classSessionEnrollmentPlusOneOk() {
+      return isSignedIn()
+        && request.resource.data.classId == resource.data.classId
+        && request.resource.data.date == resource.data.date
+        && request.resource.data.enrolled == classSessionEnrolledPrev(resource.data) + 1;
+    }
+
+    function classSessionEnrollmentMinusOneOk() {
+      return isSignedIn()
+        && request.resource.data.classId == resource.data.classId
+        && request.resource.data.date == resource.data.date
+        && request.resource.data.enrolled == classSessionEnrolledPrev(resource.data) - 1
+        && request.resource.data.enrolled >= 0;
+    }
+
+    // Assigned trainer logs a weekly recurring class occurrence (trainer dashboard session log).
+    function trainerClassAssignedTo(classIdField) {
+      return exists(/databases/$(database)/documents/classes/$(classIdField))
+        && get(/databases/$(database)/documents/classes/$(classIdField)).data.get('trainerId', '') == request.auth.uid;
+    }
+
+    function trainerCompletionNotesOk() {
+      return !request.resource.data.keys().hasAny(['notes'])
+        || (
+          request.resource.data.notes is string
+          && request.resource.data.notes.size() <= 2000
+        );
+    }
+
+    // Trainer marks weekly class session: completed | cancelled | delayed | missed (+ optional notes).
+    function trainerClassSessionPayloadOk() {
+      return trainerCompletionNotesOk()
+        && request.resource.data.sessionStatus is string
+        && request.resource.data.sessionStatus in ['completed', 'cancelled', 'delayed', 'missed']
+        && (
+          request.resource.data.sessionStatus == 'completed'
+          ? (
+            request.resource.data.completedAt is timestamp
+          )
+          : !request.resource.data.keys().hasAny(['completedAt'])
+        );
+    }
+
+    function trainerClassCompletionCreateOk(cid) {
+      return isApprovedTrainer()
+        && trainerClassSessionPayloadOk()
+        && request.resource.data.trainerId == request.auth.uid
+        && request.resource.data.classId is string
+        && request.resource.data.classId.size() > 0
+        && request.resource.data.sessionDate is string
+        && request.resource.data.sessionDate.size() >= 10
+        && cid == request.resource.data.classId + '_' + request.resource.data.sessionDate
+        && trainerClassAssignedTo(request.resource.data.classId);
+    }
+
+    function trainerClassCompletionUpdateOk(cid) {
+      return isApprovedTrainer()
+        && trainerClassSessionPayloadOk()
+        && resource.data.trainerId == request.auth.uid
+        && request.resource.data.trainerId == resource.data.trainerId
+        && request.resource.data.classId == resource.data.classId
+        && request.resource.data.sessionDate == resource.data.sessionDate
+        && cid == request.resource.data.classId + '_' + request.resource.data.sessionDate;
+    }
+
+    function trainerClassCompletionDeleteOk() {
+      return isAdmin()
+        || (isApprovedTrainer() && resource.data.trainerId == request.auth.uid);
+    }
+
+    match /admins/{adminId} {
+      allow read: if isSignedIn() && request.auth.uid == adminId;
+      allow write: if false;
+    }
+
+    /** Public-facing 6-char IDs (aaa###); doc id equals the ID. Immutable after create.
+     *  Client allocation does registryRef.get() before create — missing docs have no resource.data;
+     *  without exists() below, uid checks fail per Firebase "null resource on missing doc" semantics. */
+    match /gymPublicIds/{publicId} {
+      allow list: if isAdmin();
+
+      allow get: if isAdmin()
+        || !exists(/databases/$(database)/documents/gymPublicIds/$(publicId))
+        || (isSignedIn() && resource.data.uid == request.auth.uid)
+        || (
+          publicId.matches('^[a-z]{3}[0-9]{3}$')
+          && exists(/databases/$(database)/documents/gymPublicIds/$(publicId))
+        );
+
+      allow create: if isSignedIn()
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.role in ['member', 'trainer', 'admin']
+        && publicId.matches('^[a-z]{3}[0-9]{3}$')
+        && !exists(/databases/$(database)/documents/gymPublicIds/$(publicId));
+
+      allow update, delete: if false;
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn() && (isOwner(userId) || isAdmin());
+      allow create: if isSignedIn() && isOwner(userId);
+      allow update: if isSignedIn() && (
+        isAdmin()
+        || (
+          isOwner(userId)
+          && (!resource.data.keys().hasAny(['role'])
+            || request.resource.data.role == resource.data.role)
+          && (!resource.data.keys().hasAny(['gymPublicId'])
+            || request.resource.data.gymPublicId == resource.data.gymPublicId)
+        ));
+
+      allow delete: if isAdmin();
+    }
+
+    match /members/{userId} {
+      allow list: if isAdmin();
+      allow get: if true;
+
+      allow create: if isOwner(userId)
+        && request.resource.data.email == request.auth.token.email;
+
+      allow update: if isAdmin()
+        || (isOwner(userId)
+          && (
+            request.resource.data.email == resource.data.email
+            || (
+              !resource.data.keys().hasAny(['email'])
+              && request.resource.data.email == request.auth.token.email
+            )
+          )
+          && (!resource.data.keys().hasAny(['gymPublicId'])
+            || request.resource.data.gymPublicId == resource.data.gymPublicId));
+
+      allow delete: if isAdmin();
+    }
+
+    // Append-only ledger of membership purchases / changes / cancellations (member-facing history).
+    match /members/{userId}/membershipPurchases/{purchaseId} {
+      allow read: if isOwner(userId) || isAdmin();
+      allow create: if (isOwner(userId)
+        && request.resource.data.memberId == userId
+        && request.resource.data.type is string
+        && request.resource.data.type.size() > 0
+        && request.resource.data.type.size() < 80)
+        || (
+          isAdmin()
+          && request.resource.data.memberId == userId
+          && request.resource.data.type == 'admin_refund_approved'
+          && request.resource.data.refundOrCreditAmount is number
+          && request.resource.data.refundOrCreditAmount > 0
+          && request.resource.data.refundOrCreditAmount <= 999999999
+          && (!request.resource.data.keys().hasAny(['adminRefundedAmount'])
+            || (
+              request.resource.data.adminRefundedAmount is number
+              && request.resource.data.adminRefundedAmount == request.resource.data.refundOrCreditAmount
+            ))
+          && (!request.resource.data.keys().hasAny(['amountCharged'])
+            || request.resource.data.amountCharged == 0)
+        );
+      allow update, delete: if isAdmin();
+    }
+
+    // Member submits payout requests (credit balance vs refund-owed snapshot); admin approves in dashboard.
+    match /refundRequests/{requestId} {
+      allow read: if isAdmin() || (isSignedIn() && resource.data.memberId == request.auth.uid);
+      allow create: if isSignedIn()
+        && request.resource.data.memberId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.amount is number
+        && request.resource.data.amount > 0
+        && request.resource.data.amount <= 999999999
+        && request.resource.data.requestOrigin is string
+        && request.resource.data.requestOrigin in ['credit', 'refund']
+        && exists(/databases/$(database)/documents/members/$(request.auth.uid))
+        && (
+          (
+            request.resource.data.requestOrigin == 'credit'
+            && request.resource.data.amount
+              <= get(/databases/$(database)/documents/members/$(request.auth.uid)).data.get('planCredit', 0)
+          )
+          || (
+            request.resource.data.requestOrigin == 'refund'
+            && request.resource.data.amount
+              <= get(/databases/$(database)/documents/members/$(request.auth.uid)).data.get('lastRefundAmount', 0)
+          )
+        )
+        && (!request.resource.data.keys().hasAny(['notes'])
+          || (
+            request.resource.data.notes is string
+            && request.resource.data.notes.size() <= 2000
+          ))
+        && request.resource.data.currency is string
+        && request.resource.data.currency.size() > 0
+        && request.resource.data.currency.size() <= 16
+        && (!request.resource.data.keys().hasAny(['memberEmail'])
+          || (
+            request.resource.data.memberEmail is string
+            && request.resource.data.memberEmail.size() < 320
+          ))
+        && (!request.resource.data.keys().hasAny(['memberName'])
+          || (
+            request.resource.data.memberName is string
+            && request.resource.data.memberName.size() < 240
+          ));
+      allow delete: if isAdmin();
+      allow update: if isAdmin()
+        && resource.data.status == 'pending'
+        && request.resource.data.memberId == resource.data.memberId
+        && request.resource.data.amount == resource.data.amount
+        && request.resource.data.notes == resource.data.notes
+        && request.resource.data.currency == resource.data.currency
+        && (
+          !resource.data.keys().hasAny(['requestOrigin'])
+          || request.resource.data.requestOrigin == resource.data.requestOrigin
+        );
+    }
+
+    // Members request account closure / deletion timeline; admins complete removal from Firebase Authentication manually.
+    match /accountDeletionRequests/{requestId} {
+      allow read: if isAdmin() || (
+        isSignedIn() && resource.data.memberId == request.auth.uid
+      );
+
+      allow create: if isSignedIn()
+        && request.resource.data.memberId == request.auth.uid
+        && request.resource.data.status == 'pending'
+        && request.resource.data.requestType in ['permanent', 'temporary']
+        && request.resource.data.memberEmail is string
+        && request.resource.data.memberEmail.size() > 3
+        && request.resource.data.memberEmail.size() < 320
+        && request.resource.data.memberName is string
+        && request.resource.data.memberName.size() < 240
+        && (
+          request.resource.data.notes is string &&
+          request.resource.data.notes.size() < 800
+        )
+        && exists(/databases/$(database)/documents/members/$(request.auth.uid))
+        && (
+          (
+            request.resource.data.requestType == 'permanent'
+            && request.resource.data.keys().hasAll(['cancelDeadlineAt', 'deletionEligibleAfterAt'])
+            && request.resource.data.cancelDeadlineAt is timestamp
+            && request.resource.data.deletionEligibleAfterAt is timestamp
+          )
+          || (
+            request.resource.data.requestType == 'temporary'
+            && !(request.resource.data.keys().hasAny(['cancelDeadlineAt']))
+            && !(request.resource.data.keys().hasAny(['deletionEligibleAfterAt']))
+          )
+        );
+
+      allow update: if isAdmin()
+        || (
+          isSignedIn()
+          && resource.data.memberId == request.auth.uid
+          && resource.data.status == 'pending'
+          && request.resource.data.memberId == resource.data.memberId
+          && request.resource.data.memberEmail == resource.data.memberEmail
+          && request.resource.data.memberName == resource.data.memberName
+          && request.resource.data.requestType == resource.data.requestType
+          && request.resource.data.createdAt == resource.data.createdAt
+          && request.resource.data.status == 'cancelled_member'
+          && request.resource.data.cancelledBy == 'member'
+          && request.resource.data.cancelledAt is timestamp
+          && (!(resource.data.keys().hasAny(['cancelDeadlineAt']))
+            || request.resource.data.cancelDeadlineAt == resource.data.cancelDeadlineAt)
+          && (!(resource.data.keys().hasAny(['deletionEligibleAfterAt']))
+            || request.resource.data.deletionEligibleAfterAt == resource.data.deletionEligibleAfterAt)
+          && request.resource.data.notes == resource.data.notes
+          && (
+            resource.data.requestType != 'permanent'
+            || request.time < resource.data.cancelDeadlineAt
+          )
+        );
+
+      allow delete: if isAdmin();
+    }
+
+    match /trainers/{trainerId} {
+      allow list: if isSignedIn();
+      allow get: if true;
+
+      allow create: if isOwner(trainerId)
+        && request.resource.data.approvalStatus == 'pending'
+        && request.resource.data.email == request.auth.token.email;
+
+      allow update: if isAdmin()
+        || (isOwner(trainerId)
+            && request.resource.data.approvalStatus == resource.data.approvalStatus
+            && (
+              request.resource.data.email == resource.data.email
+              || (
+                !resource.data.keys().hasAny(['email'])
+                && request.resource.data.email == request.auth.token.email
+              )
+            )
+            && (!resource.data.keys().hasAny(['gymPublicId'])
+              || request.resource.data.gymPublicId == resource.data.gymPublicId));
+
+      allow delete: if isAdmin();
+    }
+
+    match /classSessionEnrolled/{sessionId} {
+      allow read: if isSignedIn();
+      allow create: if classSessionEnrolledCreateOk(sessionId);
+      allow update: if classSessionEnrollmentPlusOneOk() || classSessionEnrollmentMinusOneOk();
+      allow delete: if isAdmin();
+    }
+
+    match /classes/{classId} {
+      allow read: if isSignedIn();
+      allow create, delete: if isAdmin();
+      allow update: if isAdmin() || classEnrollmentSelfAdjustOk();
+    }
+
+    // Lets approved trainers resolve a reference # to bookingId without exposing all bookings via list.
+    // Admins need get() for dashboard check-in / QR (same as trainer flow; list stays closed).
+    match /bookingLookups/{code} {
+      allow get: if isApprovedTrainer() || isAdmin();
+      allow list: if false;
+      allow create: if (isSignedIn()
+        && request.resource.data.memberId == request.auth.uid
+        && request.resource.data.bookingId is string
+        && request.resource.data.bookingId.size() > 0)
+        || bookingLookupPersonalTrainerCreateOk(code);
+      allow delete: if isAdmin() || resource.data.memberId == request.auth.uid;
+      allow update: if false;
+    }
+
+    match /bookings/{bookingId} {
+      // Allow get() when doc is missing (needed for transaction slot checks); otherwise member/trainer/admin only.
+      allow read: if isSignedIn() && (
+        !exists(/databases/$(database)/documents/bookings/$(bookingId)) ||
+        resource.data.memberId == request.auth.uid ||
+        resource.data.trainerId == request.auth.uid ||
+        isAdmin()
+      );
+
+      allow create: if (isSignedIn()
+        && request.resource.data.memberId == request.auth.uid
+        && request.resource.data.status == 'confirmed')
+        || bookingPersonalSessionTrainerCreateOk(bookingId);
+
+      allow update: if isAdmin()
+        || bookingTrainerSessionStartOk()
+        || bookingMemberCancelOk();
+
+      allow delete: if isAdmin() || (
+        isSignedIn()
+        && resource.data.memberId == request.auth.uid
+        && resource.data.status == 'cancelled'
+        && resource.data.get('sessionStarted', false) != true
+      );
+    }
+
+    // Trainer asks admin to assign them to an open class (trainer dashboard + admin approval)
+    // Completion doc may not exist yet (pending slot) — trainers must still be allowed get().
+    match /trainerClassCompletions/{completionId} {
+      allow read: if isAdmin() || (
+        isApprovedTrainer() && (
+          !exists(/databases/$(database)/documents/trainerClassCompletions/$(completionId))
+          || resource.data.trainerId == request.auth.uid
+        )
+      );
+      allow create: if trainerClassCompletionCreateOk(completionId);
+      allow update: if isAdmin() || trainerClassCompletionUpdateOk(completionId);
+      allow delete: if trainerClassCompletionDeleteOk();
+    }
+
+    match /trainerClassRequests/{requestId} {
+      allow read: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.trainerId == request.auth.uid
+      );
+      allow create: if isSignedIn()
+        && request.resource.data.trainerId == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update, delete: if isAdmin();
+    }
+
+    // Member requests a 1:1 session with a trainer (from member dashboard)
+    match /trainerSessionRequests/{requestId} {
+      allow read: if isSignedIn() && (
+        isAdmin() ||
+        resource.data.memberId == request.auth.uid ||
+        resource.data.trainerId == request.auth.uid
+      );
+      allow create: if isSignedIn()
+        && request.resource.data.memberId == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow update: if isAdmin() || (
+        resource.data.trainerId == request.auth.uid
+      );
+      allow delete: if isAdmin();
+    }
+
+    match /contactMessages/{msgId} {
+      allow create: if contactWebsiteMessageCreateOk();
+      allow read: if isAdmin();
+      allow update: if false;
+      allow delete: if isAdmin();
+    }
+
+    match /gymPunchSessions/{sessionId} {
+      allow list: if isAdmin();
+      // Must allow get when the doc does not exist yet (first check-in runs a transaction.get first).
+      allow get: if isAdmin()
+        || sessionId.matches('^day_[A-Za-z0-9_-]{10,140}_[0-9]{4}-[0-9]{2}-[0-9]{2}$');
+      allow create: if gymPunchOpenCreatePublic(sessionId) || gymPunchVisitOpenCreatePublic(sessionId);
+      allow update: if gymPunchCheckoutOk()
+        || gymPunchVisitCheckoutOk()
+        || gymPunchVisitCheckInOk()
+        || gymPunchLegacyOpenToVisitCheckoutOk()
+        || gymPunchLegacyCompletedToVisitCheckInOk();
+      allow delete: if isAdmin();
+    }
+  }
+}
