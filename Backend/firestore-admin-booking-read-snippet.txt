@@ -1,0 +1,41 @@
+Firestore: admin booking check-in / QR lookup (permission denied fix)
+
+admin.js reads:
+  - bookingLookups/{code}  (document get; QR / string refs)
+  - bookings  where bookingCode == N  (numeric ref fallback; no trainerId filter)
+
+trainer.js resolves bookings using queries constrained with .where('trainerId', '==', currentUid)
+(including DaDaGym|v2|… QR payloads, which combine FieldPath.documentId() with trainerId).
+
+If the console shows “create composite index”, add the suggested bookings index (trainerId +
+__name__/document id equality). Bare .doc(bookingId).get() may still fail if your rules describe
+trainer reads using query constraints rather than unrestricted document gets.
+
+trainer.js skips bookingLookups for purely numeric refs so trainers are not blocked when only
+legacy bookingCode lookup is permitted. Alphanumeric / legacy refs still require trainer read on
+bookingLookups when that collection is consulted.
+
+Admins have no trainerId filter, so rules must still allow admin reads on both collections
+(same notion of admin as admin.js ensureAdmin: admins/{uid} doc exists OR
+users/{uid}.role == admin).
+
+Add a helper once in firestore.rules (inside match /databases/{database}/documents):
+
+  function isAdmin() {
+    return request.auth != null && (
+      exists(/databases/$(database)/documents/admins/$(request.auth.uid)) ||
+      (exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin')
+    );
+  }
+
+Then extend your existing allow read on bookings and bookingLookups with:
+
+  || isAdmin()
+
+Do not replace your full rules file; only merge these conditions into the current allow read
+for those two paths.
+
+After editing, deploy with:
+  firebase deploy --only firestore:rules
+or paste into Firebase console, Firestore, Rules, then Publish.

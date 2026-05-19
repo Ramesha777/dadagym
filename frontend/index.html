@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>DaDaGym - Premium Fitness Center</title>
+<link rel="stylesheet" href="CSS/style.css">
+<link rel="stylesheet" href="CSS/membership.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<link rel="icon" type="image" href="images/logo.png">
+</head>
+<body>
+
+<!-- ─── STICKY NAV (outside hero so it stays sticky across entire page) ─── -->
+<nav id="navbar">
+    <a href="#home" class="nav-logo"><img src="images/logo.png" alt="DaDaGym"></a>
+    <div class="nav-links" id="navLinks">
+        <ul>
+            <li><a href="#home" class="active">HOME</a></li>
+            <li><a href="membership.html">PLANS</a></li>
+            <li><a href="#classes">CLASSES</a></li>
+            <li><a href="#trainers">TRAINERS</a></li>
+            <li><a href="#gallery">GALLERY</a></li>
+            <li><a href="#contact">CONTACT</a></li>
+            <li><a href="login.html" class="nav-login"><i class="fas fa-user"></i> LOGIN</a></li>
+        </ul>
+    </div>
+    <div class="menu-toggle" id="menuToggle">
+        <span></span><span></span><span></span>
+    </div>
+</nav>
+<div class="nav-backdrop" id="navBackdrop"></div>
+
+<!-- ─── HERO ─── -->
+<section id="home" class="hero">
+    <div class="hero-content">
+        <h1>Welcome to <span class="accent">DaDaGym</span> Fitness Center</h1>
+        <p>Transform your body and mind with world-class facilities, expert trainers, and personalized fitness programs. Join thousands who have achieved their goals with us.</p>
+        <div class="hero-actions">
+            <a href="login.html" class="btn">Start Your Journey</a>
+            <a href="#plans" class="btn btn-outline">View Plans</a>
+        </div>
+        <div class="hero-stats">
+            <div><strong>5,000+</strong><span>Active Members</span></div>
+            <div><strong>50+</strong><span>Expert Trainers</span></div>
+            <div><strong>100+</strong><span>Weekly Classes</span></div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── SERVICES ─── -->
+<section id="services" class="section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Premium Fitness Services</h2>
+            <p>Comprehensive programs for every fitness goal. Beginner to advanced — we've got you covered.</p>
+        </div>
+        <div class="grid grid-3">
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-dumbbell"></i></div>
+                <h3>Personal Training</h3>
+                <p>One-on-one sessions with certified trainers. Custom workout and nutrition plans included.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-users"></i></div>
+                <h3>Group Classes</h3>
+                <p>HIIT, yoga, Zumba, and strength training in a fun, motivating group environment.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-cogs"></i></div>
+                <h3>Modern Equipment</h3>
+                <p>Latest cardio machines, free weights, functional training zones with top brands.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-apple-whole"></i></div>
+                <h3>Nutrition Coaching</h3>
+                <p>Expert diet plans, meal prep guidance, and supplement advice for your journey.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-spa"></i></div>
+                <h3>Recovery Services</h3>
+                <p>Sauna, massage therapy, cryotherapy, and stretching zones for optimal recovery.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i class="fas fa-mobile-screen"></i></div>
+                <h3>Member App</h3>
+                <p>Track workouts, book classes, view progress, and connect with trainers on mobile.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── FACILITIES ─── -->
+<section class="section section-alt">
+    <div class="container">
+        <div class="section-header">
+            <h2>World-Class Facilities</h2>
+            <p>State-of-the-art equipment and spacious training areas across multiple locations.</p>
+        </div>
+        <div class="grid grid-4">
+            <div class="img-card">
+                <img src="images/cardio.jpg" alt="Cardio Zone">
+                <div class="img-overlay"><h3>Cardio Zone</h3></div>
+            </div>
+            <div class="img-card">
+                <img src="images/freeweight.jpg" alt="Free Weights">
+                <div class="img-overlay"><h3>Free Weights</h3></div>
+            </div>
+            <div class="img-card">
+                <img src="images/functional.png" alt="Functional Area">
+                <div class="img-overlay"><h3>Functional Area</h3></div>
+            </div>
+            <div class="img-card">
+                <img src="images/gym studio.jpg" alt="Class Studio">
+                <div class="img-overlay"><h3>Class Studio</h3></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── PLANS ─── -->
+<section id="plans" class="section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Membership Plans</h2>
+            <p>Flexible options designed for every fitness level and budget.</p>
+        </div>
+
+        <!-- Billing period toggle -->
+        <div style="display:flex;justify-content:center;margin-bottom:36px;">
+            <div class="ms-billing" role="tablist" aria-label="Billing period">
+                <button class="ms-billing-btn active" data-period="monthly" role="tab" aria-selected="true">Monthly</button>
+                <button class="ms-billing-btn" data-period="yearly" role="tab" aria-selected="false">
+                    Yearly <span class="ms-save-badge">Save 2 months</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Plan cards rendered by js/index-plans.js -->
+        <div class="ms-grid" id="plansGrid"></div>
+
+        <p class="ms-note">
+            <i class="fas fa-shield-halved"></i>
+            Cancel any time. Prices in GBP (£). Tax calculated at checkout.
+        </p>
+
+        <div style="text-align:center;margin-top:24px;">
+            <a href="membership.html" class="btn btn-outline"><i class="fas fa-table-list"></i> Compare All Plans</a>
+        </div>
+    </div>
+</section>
+
+<!-- ─── CLASSES ─── -->
+<section id="classes" class="section section-alt">
+    <div class="container">
+        <div class="section-header">
+            <h2>Class Schedule</h2>
+            <p>Energizing classes led by certified instructors for every fitness level.</p>
+        </div>
+        <div class="grid grid-3">
+            <div class="class-card">
+                <div class="class-icon"><i class="fas fa-fire"></i></div>
+                <h3>Cardio Blast</h3>
+                <p>High-energy fat burn session.</p>
+                <div class="class-meta">
+                    <span><i class="fas fa-calendar"></i> Mon / Wed / Fri</span>
+                    <span><i class="fas fa-clock"></i> 6:00 AM</span>
+                    <span><i class="fas fa-hourglass-half"></i> 45 min</span>
+                </div>
+            </div>
+            <div class="class-card">
+                <div class="class-icon"><i class="fas fa-peace"></i></div>
+                <h3>Yoga Flow</h3>
+                <p>Mind-body balance and flexibility.</p>
+                <div class="class-meta">
+                    <span><i class="fas fa-calendar"></i> Tue / Thu</span>
+                    <span><i class="fas fa-clock"></i> 7:00 PM</span>
+                    <span><i class="fas fa-hourglass-half"></i> 60 min</span>
+                </div>
+            </div>
+            <div class="class-card">
+                <div class="class-icon"><i class="fas fa-dumbbell"></i></div>
+                <h3>Strength Training</h3>
+                <p>Build muscle and power.</p>
+                <div class="class-meta">
+                    <span><i class="fas fa-calendar"></i> Sat</span>
+                    <span><i class="fas fa-clock"></i> 9:00 AM</span>
+                    <span><i class="fas fa-hourglass-half"></i> 60 min</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── TRAINERS ─── -->
+<section id="trainers" class="section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Meet Our <span class="accent">Expert Trainers</span></h2>
+            <p>World-class coaches dedicated to transforming your fitness journey with personalized programs.</p>
+        </div>
+        <div class="trainer-grid">
+            <div class="trainer-card">
+                <div class="trainer-img">
+                    <img src="images/krishal.jpeg" alt="Krishal Strength Master" style="width:100%; height:auto; display:block;">
+                    <div class="trainer-badge">Strength</div>
+                    <div class="trainer-social">
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="trainer-body">
+                    <div class="trainer-top">
+                        <div>
+                            <h3>Krishal Strength Master</h3>
+                            <span class="trainer-role">Strength &amp; Conditioning</span>
+                        </div>
+                        <div class="trainer-rating"><i class="fas fa-star"></i> 4.9</div>
+                    </div>
+                    <p>10+ years helping clients build strength, improve posture, and boost confidence through personalized powerlifting and functional training.</p>
+                    <div class="tag-row">
+                        <span>Powerlifting</span><span>Functional</span><span>Rehab</span>
+                    </div>
+                    <div class="trainer-stats">
+                        <div><strong>10+</strong><small>Years</small></div>
+                        <div><strong>200+</strong><small>Clients</small></div>
+                        <div><strong>500+</strong><small>Sessions</small></div>
+                    </div>
+                    <a href="login.html?from=book" class="btn btn-full btn-sm">
+                        <i class="fas fa-calendar-plus"></i> Book Session
+                    </a>
+                </div>
+            </div>
+
+            <div class="trainer-card">
+                <div class="trainer-img">
+                    <img src="images/sunita.jpeg" alt="Sunita Yoga Expert">
+                    <div class="trainer-badge">Yoga</div>
+                    <div class="trainer-social">
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="trainer-body">
+                    <div class="trainer-top">
+                        <div>
+                            <h3>Sunita Yoga Expert</h3>
+                            <span class="trainer-role">Yoga &amp; Pilates Expert</span>
+                        </div>
+                        <div class="trainer-rating"><i class="fas fa-star"></i> 5.0</div>
+                    </div>
+                    <p>8 years of mindful movement coaching — flexibility, core strength, and stress relief in a calming yet challenging environment.</p>
+                    <div class="tag-row">
+                        <span>Hatha Yoga</span><span>Pilates</span><span>Mindfulness</span>
+                    </div>
+                    <div class="trainer-stats">
+                        <div><strong>8+</strong><small>Years</small></div>
+                        <div><strong>150+</strong><small>Clients</small></div>
+                        <div><strong>400+</strong><small>Sessions</small></div>
+                    </div>
+                    <a href="login.html?from=book" class="btn btn-full btn-sm">
+                        <i class="fas fa-calendar-plus"></i> Book Session
+                    </a>
+                </div>
+            </div>
+
+            <div class="trainer-card">
+                <div class="trainer-img">
+                    <img src="images/ramesh.jpeg" alt="Mike Fitness" style="width:100%; height:auto; display:block;">
+                    <div class="trainer-badge">HIIT</div>
+                    <div class="trainer-social">
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+                <div class="trainer-body">
+                    <div class="trainer-top">
+                        <div>
+                            <h3>Ramesh Cardio Coach </h3>
+                            <span class="trainer-role">Cardio &amp; HIIT Master</span>
+                        </div>
+                        <div class="trainer-rating"><i class="fas fa-star"></i> 4.8</div>
+                    </div>
+                    <p>12-year veteran of high-intensity training, delivering fat loss results through scientifically backed HIIT and metabolic conditioning.</p>
+                    <div class="tag-row">
+                        <span>HIIT</span><span>Fat Loss</span><span>Performance</span>
+                    </div>
+                    <div class="trainer-stats">
+                        <div><strong>12+</strong><small>Years</small></div>
+                        <div><strong>300+</strong><small>Clients</small></div>
+                        <div><strong>800+</strong><small>Sessions</small></div>
+                    </div>
+                    <a href="login.html?from=book" class="btn btn-full btn-sm">
+                        <i class="fas fa-calendar-plus"></i> Book Session
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── TESTIMONIALS ─── -->
+<section class="section section-alt">
+    <div class="container">
+        <div class="section-header">
+            <h2>What Our Members Say</h2>
+            <p>Real results from real members transforming their lives at DaDaGym.</p>
+        </div>
+        <div class="grid grid-2">
+            <div class="testimonial">
+                <img src="images/mike-tyson.jpg" alt="Mike Johnson">
+                <div class="testimonial-content">
+                    <p>"Lost 25 lbs in 3 months with personal training! Best decision I ever made."</p>
+                    <h4>Mike Johnson</h4>
+                    <div class="stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial">
+                <img src="images/sarah.jpg" alt="Sarah Wilson">
+                <div class="testimonial-content">
+                    <p>"Love the classes and supportive community. The trainers truly care. Highly recommend!"</p>
+                    <h4>Sarah Wilson</h4>
+                    <div class="stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── GALLERY ─── -->
+<section id="gallery" class="section">
+    <div class="container">
+        <div class="section-header">
+            <h2>Gallery</h2>
+            <p>Experience DaDaGym through images.</p>
+        </div>
+        <div class="grid grid-4">
+            <div class="img-card">
+                <img src="images/modern.jpg" alt="Modern Equipment">
+                <div class="img-overlay"><h3>Modern Equipment</h3></div>
+            </div>
+            <div class="img-card">
+                <img src="images/live classes.jpg" alt="Live Classes">
+                <div class="img-overlay"><h3>Live Classes</h3></div>
+            </div>
+            <div class="img-card">
+                <img src="images/campaing.png" alt="Member Results">
+                <div class="img-overlay"><h3>Fitness Camp</h3></div>
+            </div>
+            <div class="img-card">
+                <img src="images/personal training.png" alt="Personal Training">
+                <div class="img-overlay"><h3>Personal Training</h3></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ─── CONTACT ─── -->
+<section id="contact" class="section section-alt">
+    <div class="container">
+        <div class="section-header">
+            <h2>Get In Touch</h2>
+            <p>Visit us or drop a message. We'd love to hear from you.</p>
+        </div>
+<div class="contact-form-container">
+    <form class="contact-form" id="contactForm" novalidate>
+        <div class="form-row">
+            <div class="form-group">
+                <label><i class="fas fa-user"></i> Name</label>
+                <input type="text" name="name" autocomplete="name" placeholder="Your full name" maxlength="200" required>
+            </div>
+            <div class="form-group">
+                <label><i class="fas fa-envelope"></i> Email</label>
+                <input type="email" name="email" autocomplete="email" placeholder="your@email.com" maxlength="254" required>
+            </div>
+        </div>
+        <div class="form-group">
+            <label><i class="fas fa-phone"></i> Phone</label>
+            <input type="tel" name="phone" autocomplete="tel" maxlength="60" placeholder="Your phone number (optional)">
+        </div>
+        <div class="form-group">
+            <label><i class="fas fa-message"></i> Message</label>
+            <textarea name="message" rows="5" maxlength="5000" placeholder="Tell us how we can help you..." required></textarea>
+        </div>
+        <div id="contactFormFeedback" class="contact-form-feedback" role="status" aria-live="polite"></div>
+        <button type="submit" class="btn btn-full" style="width:auto; margin-top:16px; padding-top: 12px;" id="contactFormSubmit">
+            <i class="fas fa-paper-plane"></i> Send Message
+        </button>
+    </form>
+</div>
+    </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+    <div class="container footer-inner">
+        <div class="footer-brand">
+            <img src="images/logo.png" alt="DaDaGym" width="50">
+            <span>DaDaGym Fitness</span>
+        </div>
+        <div class="footer-links">
+            <a href="#home">Home</a>
+            <a href="membership.html">Plans</a>
+            <a href="#classes">Classes</a>
+            <a href="#trainers">Trainers</a>
+            <a href="#gallery">Gallery</a>
+            <a href="#contact">Contact</a>
+        </div>
+        <p>&copy; 2026 DaDaGym Fitness Center. All rights reserved. | <a href="login.html">Member Dashboard</a></p>
+    </div>
+</footer>
+
+<script>
+(function() {
+    var navLinks  = document.getElementById('navLinks');
+    var menuBtn   = document.getElementById('menuToggle');
+    var navbar    = document.getElementById('navbar');
+    var anchors   = document.querySelectorAll('.nav-links ul li a');
+    var sections  = document.querySelectorAll('section[id]');
+
+    menuBtn.addEventListener('click', function() {
+        navLinks.classList.toggle('open');
+        menuBtn.classList.toggle('open');
+    });
+
+    anchors.forEach(function(a) {
+        a.addEventListener('click', function() {
+            navLinks.classList.remove('open');
+            menuBtn.classList.remove('open');
+        });
+    });
+
+    var spy = new IntersectionObserver(function(entries) {
+        entries.forEach(function(e) {
+            if (e.isIntersecting) {
+                anchors.forEach(function(a) {
+                    a.classList.toggle('active', a.getAttribute('href') === '#' + e.target.id);
+                });
+            }
+        });
+    }, { rootMargin: '-30% 0px -65% 0px' });
+
+    sections.forEach(function(s) { spy.observe(s); });
+
+    window.addEventListener('scroll', function() {
+        navbar.classList.toggle('scrolled', window.scrollY > 60);
+    });
+})();
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore-compat.js"></script>
+<script type="module" src="js/index-plans.js"></script>
+<script type="module" src="js/contact-form.js"></script>
+</body>
+</html>

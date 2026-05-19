@@ -1,0 +1,33 @@
+# Firebase config (contains API keys)
+
+frontend/images
+# Firebase project config & security rules
+firebase.json
+firestore.rules
+storage.rules
+database.rules.json
+firestore.indexes.json
+# Environment / secrets
+.env
+.env.*
+
+# Node
+node_modules/
+package-lock.json
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Firebase local
+.firebase/
+*.log
+firebase-debug.log
+# frontend/images/: keep tracked — hero and markup depend on deployed static files.
+
+.README-booking-checkin.md

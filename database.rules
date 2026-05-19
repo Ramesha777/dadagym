@@ -1,0 +1,35 @@
+{
+  "rules": {
+    "chatRooms": {
+      "$roomId": {
+        ".read": "auth != null && (data.child('members').hasChild(auth.uid) || (root.child('users').child(auth.uid).child('role').val() == 'admin'))",
+        ".write": "auth != null && (data.child('members').hasChild(auth.uid) || (root.child('users').child(auth.uid).child('role').val() == 'admin'))",
+        ".validate": "newData.hasChildren(['members']) && newData.child('members').hasChild(auth.uid) && newData.child('members').val().keys().hasAny([auth.uid])",
+        "members": {
+          "$uid": {
+            ".validate": "newData.isBoolean() && newData.val() == true"
+          }
+        },
+        "memberId": { ".validate": "newData.isString() },
+        "trainerId": { ".validate": "newData.isString() },
+        "memberName": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100" },
+        "trainerName": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 100" },
+        "lastMessage": { ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 500" },
+        "lastTimestamp": { ".validate": "newData.isNumber() || newData == '.sv' " }
+      }
+    },
+    "chats": {
+      "$roomId": {
+        ".read": "auth != null && root.child('chatRooms').child($roomId).child('members').hasChild(auth.uid)",
+        ".write": "auth != null && root.child('chatRooms').child($roomId).child('members').hasChild(auth.uid)",
+        "$msgId": {
+          ".validate": "newData.hasChildren(['senderId', 'senderName', 'text', 'timestamp']) &&
+                       newData.child('senderId').isString() && newData.child('senderId').val() == auth.uid &&
+                       newData.child('senderName').isString() && newData.child('senderName').val().length > 0 && newData.child('senderName').val().length <= 100 &&
+                       newData.child('text').isString() && newData.child('text').val().length > 0 && newData.child('text').val().length <= 1000 &&
+                       (newData.child('timestamp').isNumber() || newData.child('timestamp') == '.sv')"
+        }
+      }
+    }
+  }
+}
